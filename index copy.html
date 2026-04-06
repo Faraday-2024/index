@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>记忆守望 | 数字艺术疗愈平台</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(145deg, #faf7fc 0%, #f0eaf8 100%);
+            color: #2d2a3e;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+            position: relative;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 动态渐变背景 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 30%, rgba(155,123,199,0.15), transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            animation: bgPulse 12s ease infinite;
+        }
+        @keyframes bgPulse {
+            0% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+            100% { opacity: 0.4; transform: scale(1); }
+        }
+
+        /* 粒子背景 Canvas */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        :root {
+            --primary: #9b7bc7;
+            --primary-light: #c2abf0;
+            --primary-dark: #7d60aa;
+            --bg-card: rgba(255,255,255,0.85);
+            --bg-card-solid: #ffffff;
+            --text-dark: #2d2a3e;
+            --text-soft: #6b5b7e;
+            --shadow: 0 20px 35px -12px rgba(0,0,0,0.15);
+            --shadow-hover: 0 28px 45px -12px rgba(0,0,0,0.25);
+            --border-radius: 32px;
+            --glow: 0 0 12px rgba(155,123,199,0.4);
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 玻璃导航栏 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 0.6rem 2rem;
+            background: rgba(255,255,255,0.45);
+            backdrop-filter: blur(16px);
+            border-radius: 60px;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #9b7bc7, #d4b8ff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .logo i {
+            color: #9b7bc7;
+            margin-right: 8px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            font-weight: 500;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #5e4b7c;
+            transition: 0.2s;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .nav-links a:hover {
+            color: #9b7bc7;
+            text-shadow: 0 0 6px rgba(155,123,199,0.5);
+        }
+
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #9b7bc7, #b595e0);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.6rem;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            font-size: 0.9rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid var(--primary);
+            color: var(--primary);
+            box-shadow: none;
+        }
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--glow);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(155,123,199,0.4);
+        }
+
+        .hero {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+            margin: 3rem 0 4rem;
+            background: rgba(255,255,255,0.35);
+            backdrop-filter: blur(12px);
+            border-radius: 60px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+        .hero-text h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1.2;
+            background: linear-gradient(135deg, #2d2a3e, #7d60aa);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .hero-text p {
+            font-size: 1.1rem;
+            color: #6b5b7e;
+            margin-bottom: 1.8rem;
+        }
+        .hero-img {
+            background: rgba(255,255,255,0.5);
+            border-radius: 48px;
+            padding: 1rem;
+            box-shadow: var(--shadow);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 2.5rem 0 1.2rem;
+            position: relative;
+            display: inline-block;
+        }
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 60%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), #e0d0ff);
+            border-radius: 3px;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .card {
+            background: var(--bg-card-solid);
+            border-radius: var(--border-radius);
+            padding: 1.8rem;
+            transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1), box-shadow 0.3s;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(155,123,199,0.2);
+            backdrop-filter: blur(4px);
+        }
+        .card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-light);
+        }
+        .card-icon {
+            font-size: 2.6rem;
+            color: var(--primary);
+            margin-bottom: 1.2rem;
+            transition: transform 0.2s;
+        }
+        .card:hover .card-icon {
+            transform: scale(1.1);
+        }
+        .card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .demo-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0;
+            transition: gap 0.2s;
+        }
+        .demo-btn:hover {
+            color: var(--primary-dark);
+            gap: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(12px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s;
+        }
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: rgba(255,255,255,0.98);
+            max-width: 800px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            border-radius: 48px;
+            padding: 2rem;
+            box-shadow: 0 30px 50px rgba(0,0,0,0.3);
+            position: relative;
+            border: 1px solid rgba(155,123,199,0.3);
+            transform: scale(0.9);
+            transition: transform 0.2s cubic-bezier(0.34, 1.2, 0.64, 1);
+        }
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+        .modal-close {
+            position: absolute;
+            top: 1.2rem;
+            right: 1.5rem;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #aaa;
+            transition: transform 0.2s;
+        }
+        .modal-close:hover {
+            color: var(--primary);
+            transform: rotate(90deg);
+        }
+
+        .danmaku-container {
+            position: relative;
+            width: 100%;
+            height: 320px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 32px;
+            overflow: hidden;
+            margin: 1rem 0;
+            border: 1px solid rgba(155,123,199,0.3);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.02);
+        }
+        .danmaku-canvas {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .danmaku {
+            position: absolute;
+            white-space: nowrap;
+            will-change: transform;
+            font-size: 1rem;
+            background: linear-gradient(90deg, rgba(155,123,199,0.85), rgba(194,171,240,0.85));
+            color: white;
+            padding: 6px 14px;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            font-weight: 500;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .loader {
+            border: 4px solid rgba(155,123,199,0.3);
+            border-top: 4px solid #9b7bc7;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #9b7bc7;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7d60aa;
+        }
+
+        .memory-grid, .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+        .interactive-demo {
+            background: linear-gradient(135deg, #f4edff, #faf5ff);
+            border-radius: 48px;
+            padding: 1.8rem;
+            margin: 2rem 0;
+        }
+        footer {
+            margin-top: 4rem;
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid #e0d6f0;
+            color: #8f7faa;
+        }
+        canvas {
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+        }
+        .candle {
+            width: 50px;
+            height: 100px;
+            background: #ffe0b5;
+            border-radius: 30px;
+            position: relative;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .candle.lit::before {
+            content: "🔥";
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        .petal {
+            position: fixed;
+            pointer-events: none;
+            animation: fall 6s linear forwards;
+            font-size: 20px;
+            z-index: 999;
+        }
+        .post-list {
+            margin: 1rem 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .post {
+            background: #f9f3ff;
+            border-radius: 20px;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+        .upload-area {
+            border: 2px dashed var(--primary);
+            border-radius: 24px;
+            padding: 1rem;
+            margin: 1rem 0;
+            text-align: center;
+        }
+        .memory-item {
+            background: #f4edff;
+            border-radius: 20px;
+            padding: 0.8rem;
+            width: 120px;
+            text-align: center;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+<div class="container">
+    <div class="navbar">
+        <div class="logo"><i class="fas fa-moon"></i> 记忆守望</div>
+        <div class="nav-links">
+            <a onclick="document.getElementById('modules').scrollIntoView({behavior:'smooth'})">疗愈花园</a>
+            <a onclick="document.getElementById('heavenLetterBtn').scrollIntoView({behavior:'smooth'})">天堂来信</a>
+            <a onclick="document.getElementById('communityBlock').scrollIntoView({behavior:'smooth'})">问答专区</a>
+        </div>
+    </div>
+
+    <div class="hero">
+        <div class="hero-text">
+            <h1>让思念有处安放<br>让哀伤有路可循</h1>
+            <p>记忆守望是一个将艺术疗愈与AI技术结合的温暖平台。通过数字记忆相册、情感画布、仪式空间和匿名问答专区，陪你度过每一段怀念的时光。</p>
+            <button class="btn" id="exploreBtn"><i class="fas fa-feather-alt"></i> 开启疗愈之旅</button>
+        </div>
+        <div class="hero-img">
+            <div style="background: #ffffffaa; border-radius: 32px; padding: 1.5rem;">
+                <i class="fas fa-dove" style="font-size: 3rem; color: #9b7bc7;"></i>
+                <p>✨ 天堂来信 · 寄往星辰的思念 ✨</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="modules">
+        <h2 class="section-title"><i class="fas fa-feather"></i> 艺术疗愈工作室</h2>
+        <div class="card-grid">
+            <!-- 数字记忆相册模块（小图标已统一） -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-images"></i></div>
+                <h3>数字记忆相册</h3>
+                <p>上传照片，添加声音印记，让回忆鲜活。</p>
+                <button class="demo-btn" data-modal="memoryFullModal"><i class="fas fa-play-circle"></i> 进入相册</button>
+            </div>
+            <!-- 情感画布模块：生成独特且与其他模块协调的小图标 (绘画+AI融合感) -->
+            <div class="card">
+                <div class="card-icon" data-custom="canvas">
+                    <i class="fas fa-palette"></i>
+                </div>
+                <h3>情感画布</h3>
+                <p>绘画 & AI文生图，将思念化为图像。</p>
+                <button class="demo-btn" data-modal="canvasFullModal"><i class="fas fa-play-circle"></i> 开始创作</button>
+            </div>
+            <!-- 仪式感空间 · 华丽礼赞 -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-crown"></i></div>
+                <h3>仪式感空间 · 华丽礼赞</h3>
+                <p>虚拟纪念仪式、点烛、花瓣祈愿。</p>
+                <button class="demo-btn" data-modal="ritualFullModal"><i class="fas fa-play-circle"></i> 举行仪式</button>
+            </div>
+            <!-- 星光匿名社区 -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-users"></i></div>
+                <h3>星光匿名社区</h3>
+                <p>匿名分享，AI情绪预警。</p>
+                <button class="demo-btn" data-modal="communityFullModal"><i class="fas fa-play-circle"></i> 进入社区</button>
+            </div>
+        </div>
+    </div>
+<h2 class="section-title"><i class="fas fa-seedling"></i> 创造性记忆再生</h2>
+<div class="card-grid">
+    <!-- 卡片1：记忆启发作词 -->
+    <div class="card creative-card">
+        <div class="card-icon"><i class="fas fa-feather-alt"></i></div>
+        <h3>记忆启发作词</h3>
+        <p>基于记忆片段生成诗歌，让思念化作文字。</p>
+        <button class="demo-btn" data-modal="poemEnhancedModal"><i class="fas fa-play-circle"></i> 生成诗歌</button>
+    </div>
+    
+    <!-- 卡片2：生活延续计划 -->
+    <div class="card creative-card">
+        <div class="card-icon"><i class="fas fa-chart-line"></i></div>
+        <h3>生活延续计划</h3>
+        <p>完成逝者未竟心愿，让爱延续。</p>
+        <button class="demo-btn" data-modal="legacyEnhancedModal"><i class="fas fa-play-circle"></i> 心愿清单</button>
+    </div>
+    
+    <!-- 卡片3：AI数字人对话 -->
+    <div class="card creative-card">
+        <div class="card-icon"><i class="fas fa-comments"></i></div>
+        <h3>AI数字人对话</h3>
+        <p>与逝者的数字形象对话，倾诉思念。</p>
+        <button class="demo-btn" data-modal="aiEnhancedModal"><i class="fas fa-play-circle"></i> 开始对话</button>
+    </div>
+</div>
+
+<!-- 模态框 -->
+<div id="memoryFullModal" class="modal"><div class="modal-content"><span class="modal-close">&times;</span><h3><i class="fas fa-images"></i> 数字记忆相册</h3><div class="upload-area"><input type="file" id="memoryUpload" accept="image/*" style="display:none"><button class="btn" onclick="document.getElementById('memoryUpload').click()">上传照片</button></div><div id="memoryGalleryList" class="memory-grid"></div><div id="memoryStoryDisplay" style="margin-top:1rem; background:#f9f3ff; border-radius:20px; padding:1rem;">点击照片添加声音印记</div></div></div>
+
+<div id="canvasFullModal" class="modal"><div class="modal-content"><span class="modal-close">&times;</span><h3><i class="fas fa-palette"></i> 情感画布</h3><canvas id="drawCanvas" width="500" height="300" style="width:100%; height:auto; background:#fff; border-radius:16px;"></canvas><div class="flex-row"><button class="btn" id="clearCanvasBtn">清空画布</button><button class="btn" id="generateCardBtn">生成卡片</button></div><div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;"><h4><i class="fas fa-robot"></i> AI 文生图</h4><textarea id="aiPromptInput" rows="2" placeholder="用中文描述你想生成的画面，例如：温暖的黄昏，一位老人坐在藤椅上，思念远方" style="width:100%; border-radius: 20px; padding: 12px;"></textarea><button class="btn" id="aiImageBtn" style="margin-top: 10px;"><i class="fas fa-magic"></i> 生成图像</button><div id="aiImageResult" style="margin-top: 15px;"></div></div><div id="cardPreview" style="display:none;"><img id="cardImage" style="max-width:100%; border-radius:16px;"></div></div></div>
+
+<div id="ritualFullModal" class="modal"><div class="modal-content"><span class="modal-close">&times;</span><h3><i class="fas fa-crown"></i> 华丽仪式 · 思念礼赞</h3><div><p>选择花圈：</p><div class="flex-row"><button class="btn-outline" data-wreath="白菊花">白菊花</button><button class="btn-outline" data-wreath="紫罗兰">紫罗兰</button><button class="btn-outline" data-wreath="金色玫瑰">金色玫瑰</button></div><div class="candle-container" style="display:flex; gap:1rem; margin:1rem 0;"><div class="candle" id="candle1"></div><div class="candle" id="candle2"></div><div class="candle" id="candle3"></div></div><button class="btn" id="startPetalsBtn"><i class="fas fa-feather-alt"></i> 洒下思念花瓣</button><div id="ritualMessage"></div></div></div></div>
+
+<div id="communityFullModal" class="modal"><div class="modal-content"><span class="modal-close">&times;</span><h3><i class="fas fa-users"></i> 星光匿名社区</h3><select id="topicSelect"><option>初遇哀伤</option><option>记忆分享</option><option>成长之路</option></select><textarea id="newPostContent" rows="2" placeholder="匿名分享你的心情..."></textarea><button class="btn" id="publishPostBtn">发布</button><div id="postList" class="post-list"></div></div></div>
+
+<div id="poemFullModal" class="modal"><div class="modal-content"><span class="modal-close">&times;</span><h3><i class="fas fa-feather-alt"></i> 记忆启发作词</h3><input type="text" id="poemKeyword" placeholder="输入记忆关键词"><button class="btn" id="generatePoemBtn">生成诗歌</button><div id="poemResult" style="margin-top:1rem; background:#f9f3ff; border-radius:20px; padding:1rem;"></div></div></div>
+
+<div id="legacyFullModal" class="modal"><div class="modal-content"><span class="modal-close">&times;</span><h3><i class="fas fa-chart-line"></i> 生活延续计划</h3><ul id="wishList"><li>去一次海边 <button class="demo-btn" onclick="completeWish(this)">完成</button></li><li>学习绘画 <button class="demo-btn" onclick="completeWish(this)">完成</button></li><li>为山区儿童捐书 <button class="demo-btn" onclick="completeWish(this)">完成</button></li></ul><div class="flex-row"><input type="text" id="newWish" placeholder="添加新的心愿"><button class="btn" id="addWishBtn">添加</button></div><div id="legacyMessage"></div></div></div>
+
+<div id="aiFullModal" class="modal"><div class="modal-content"><span class="modal-close">&times;</span><h3><i class="fas fa-robot"></i> AI数字人对话</h3><div id="chatMessages" style="height:200px; overflow-y:auto; background:#f9f3ff; border-radius:20px; padding:1rem;"></div><div class="flex-row"><input type="text" id="chatInput" placeholder="输入你想说的话..."><button class="btn" id="sendChatBtn">发送</button></div></div></div>
+
+<div id="heavenLetterModal" class="modal"><div class="modal-content" style="max-width: 900px;"><span class="modal-close">&times;</span><h3><i class="fas fa-envelope-open-text"></i> 来自天堂的信</h3><p>寄往星辰的思念，化作飘动的弹幕。写下你想对TA说的话，让爱穿越时空。</p><div style="display: flex; gap: 1rem; margin: 1rem 0; flex-wrap: wrap;"><button class="btn-outline" data-category="traditional">传统节日</button><button class="btn-outline" data-category="free">自由式</button><button class="btn-outline" data-category="anniversary">纪念日</button></div><div class="danmaku-container"><div id="danmakuCanvas" class="danmaku-canvas"></div></div><div class="flex-row" style="margin: 1rem 0;"><input type="text" id="danmakuInput" placeholder="写下你的思念..." style="flex:1;"><button class="btn" id="sendDanmakuBtn"><i class="fas fa-paper-plane"></i> 寄出</button></div><div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 0.5rem;"><button class="history-btn" id="historyBtn"><i class="fas fa-history"></i> 历史记录</button><button class="report-btn" id="annualReportBtn"><i class="fas fa-calendar-alt"></i> 年度报告</button></div><p style="font-size: 0.8rem; margin-top: 1rem; color: #7d60aa;"><i class="fas fa-heart"></i> 每一句弹幕，都是一份温暖的思念，将在空中缓缓飘过。</p></div></div>
+
+<script>
+    // 粒子背景
+    const bgCanvas = document.getElementById('bgCanvas');
+    let bgCtx = bgCanvas.getContext('2d');
+    let particles = [];
+    function initParticles() {
+        particles = [];
+        const count = 100;
+        for (let i = 0; i < count; i++) {
+            particles.push({
+                x: Math.random() * bgCanvas.width,
+                y: Math.random() * bgCanvas.height,
+                radius: Math.random() * 3 + 1,
+                alpha: Math.random() * 0.5 + 0.2,
+                vx: (Math.random() - 0.5) * 0.4,
+                vy: (Math.random() - 0.5) * 0.4
+            });
+        }
+    }
+    function drawParticles() {
+        if (!bgCtx) return;
+        bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+        for (let p of particles) {
+            bgCtx.beginPath();
+            bgCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            bgCtx.fillStyle = `rgba(155, 123, 199, ${p.alpha})`;
+            bgCtx.fill();
+            p.x += p.vx;
+            p.y += p.vy;
+            if (p.x < 0) p.x = bgCanvas.width;
+            if (p.x > bgCanvas.width) p.x = 0;
+            if (p.y < 0) p.y = bgCanvas.height;
+            if (p.y > bgCanvas.height) p.y = 0;
+        }
+        requestAnimationFrame(drawParticles);
+    }
+    function resizeBgCanvas() {
+        bgCanvas.width = window.innerWidth;
+        bgCanvas.height = window.innerHeight;
+        initParticles();
+    }
+    window.addEventListener('resize', resizeBgCanvas);
+    resizeBgCanvas();
+    drawParticles();
+
+    // 模态框管理
+    const modals = document.querySelectorAll('.modal');
+    const openBtns = document.querySelectorAll('[data-modal]');
+    const closeSpans = document.querySelectorAll('.modal-close');
+    function openModal(id) {
+        const modal = document.getElementById(id);
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('show'), 10);
+    }
+    function closeAllModals() {
+        modals.forEach(m => {
+            m.classList.remove('show');
+            setTimeout(() => m.style.display = 'none', 300);
+        });
+    }
+    openBtns.forEach(btn => btn.addEventListener('click', () => openModal(btn.getAttribute('data-modal'))));
+    closeSpans.forEach(span => span.addEventListener('click', closeAllModals));
+    window.addEventListener('click', (e) => { if (e.target.classList.contains('modal')) closeAllModals(); });
+    document.getElementById('exploreBtn').addEventListener('click', () => document.getElementById('modules').scrollIntoView({ behavior: 'smooth' }));
+    document.getElementById('treeholeBtn').addEventListener('click', () => alert('🌿 问答树洞模拟：您可匿名提问，专家会在3个工作日内回复。'));
+
+    // 数字记忆相册
+    let memories = [];
+    const memoryUpload = document.getElementById('memoryUpload');
+    const galleryDiv = document.getElementById('memoryGalleryList');
+    const storyDiv = document.getElementById('memoryStoryDisplay');
+    memoryUpload.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                memories.push({ url: ev.target.result, story: '' });
+                renderMemoryGallery();
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    function renderMemoryGallery() {
+        galleryDiv.innerHTML = '';
+        memories.forEach((mem, idx) => {
+            const div = document.createElement('div');
+            div.className = 'memory-item';
+            div.innerHTML = `<img src="${mem.url}" style="width:80px; height:80px; object-fit:cover; border-radius:12px;"><br>添加印记`;
+            div.onclick = () => {
+                const newStory = prompt('请为这张照片添加声音印记（文字故事）:', mem.story || '');
+                if (newStory !== null) memories[idx].story = newStory;
+                storyDiv.innerHTML = `📖 声音印记：${memories[idx].story || '无'}`;
+            };
+            galleryDiv.appendChild(div);
+        });
+    }
+
+    // 情感画布绘画
+    const canvas = document.getElementById('drawCanvas');
+    const ctx = canvas.getContext('2d');
+    function resizeCanvas() {
+        const container = canvas.parentElement;
+        const width = container.clientWidth - 40;
+        canvas.width = Math.min(width, 500);
+        canvas.height = canvas.width * 0.6;
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    resizeCanvas();
+    let painting = false;
+    function startPaint(e) { painting = true; draw(e); }
+    function endPaint() { painting = false; ctx.beginPath(); }
+    function draw(e) {
+        if (!painting) return;
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        let clientX, clientY;
+        if (e.touches) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; e.preventDefault(); }
+        else { clientX = e.clientX; clientY = e.clientY; }
+        const x = (clientX - rect.left) * scaleX;
+        const y = (clientY - rect.top) * scaleY;
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#9b7bc7';
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+    canvas.addEventListener('mousedown', startPaint); canvas.addEventListener('mouseup', endPaint); canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('touchstart', startPaint); canvas.addEventListener('touchend', endPaint); canvas.addEventListener('touchmove', draw);
+    document.getElementById('clearCanvasBtn').addEventListener('click', () => { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.beginPath(); document.getElementById('cardPreview').style.display = 'none'; });
+    document.getElementById('generateCardBtn').addEventListener('click', () => { document.getElementById('cardImage').src = canvas.toDataURL(); document.getElementById('cardPreview').style.display = 'block'; });
+
+    // AI文生图模拟（移除SD链接）
+    document.getElementById('aiImageBtn').addEventListener('click', async () => {
+        const userInput = document.getElementById('aiPromptInput').value.trim();
+        if (!userInput) { alert('请输入一段文字描述'); return; }
+        const resultDiv = document.getElementById('aiImageResult');
+        resultDiv.innerHTML = '<div class="loader"></div><p>🎨 AI正在理解您的描述，生成专属图像...</p>';
+        setTimeout(() => {
+            resultDiv.innerHTML = `<div style="background:#f3eaff; border-radius:24px; padding:1rem; text-align:center;">
+                <i class="fas fa-image" style="font-size:3rem; color:#9b7bc7;"></i>
+                <p>✨ 演示模式 ✨</p>
+                <p>您的描述：“${userInput}”<br>生成完成+图像由AI根据您的文字生成。</p>
+                <img src="https://picsum.photos/400/300?random=${Date.now()}" style="max-width:100%; border-radius:16px; margin-top:10px;">
+            </div>`;
+        }, 1500);
+    });
+
+    // 仪式感空间
+    let candles = document.querySelectorAll('.candle');
+    candles.forEach(candle => candle.addEventListener('click', function() { this.classList.toggle('lit'); }));
+    document.getElementById('startPetalsBtn').addEventListener('click', () => {
+        for(let i=0;i<30;i++) createPetal();
+        document.getElementById('ritualMessage').innerHTML = '<p>🌸 思念花瓣飘落，愿记忆如花，温柔绽放。</p>';
+    });
+    function createPetal() {
+        const petal = document.createElement('div');
+        petal.className = 'petal';
+        petal.innerHTML = '🌸';
+        petal.style.left = Math.random() * window.innerWidth + 'px';
+        petal.style.top = '-20px';
+        document.body.appendChild(petal);
+        setTimeout(() => petal.remove(), 6000);
+    }
+    document.querySelectorAll('[data-wreath]').forEach(btn => {
+        btn.addEventListener('click', () => document.getElementById('ritualMessage').innerHTML = `<p>🌼 已选择${btn.innerText}花圈，愿花香伴思念。</p>`);
+    });
+
+    // 星光社区
+    let posts = [{ topic: '初遇哀伤', content: '失去亲人后，每天都很想他。这里让我感觉不孤单。' }, { topic: '记忆分享', content: '分享一张老照片，外婆的笑容永远温暖。' }];
+    function renderPosts() { const container = document.getElementById('postList'); container.innerHTML = ''; posts.forEach(p => { const div = document.createElement('div'); div.className = 'post'; div.innerHTML = `<strong>【${p.topic}】</strong><br>${p.content}<br><small>匿名 · 刚刚</small>`; container.appendChild(div); }); }
+    renderPosts();
+    document.getElementById('publishPostBtn').addEventListener('click', () => { const topic = document.getElementById('topicSelect').value; const content = document.getElementById('newPostContent').value.trim(); if(content){ posts.unshift({ topic, content }); renderPosts(); document.getElementById('newPostContent').value = ''; alert('发布成功，AI情绪预警已分析。'); } });
+
+    // 诗歌生成
+    document.getElementById('generatePoemBtn').addEventListener('click', () => {
+        const kw = document.getElementById('poemKeyword').value.trim();
+        const poems = ['月光洒在旧窗台，\n你的身影犹在。\n轻风送来你的低语，\n思念如海。','黄昏把回忆染成金色，\n每一步都踏着你的足迹。\n爱依然在心间。','那年的花开了又谢，\n我守着你的微笑。\n时光带不走温暖。'];
+        let result = poems[Math.floor(Math.random() * poems.length)];
+        if(kw) result = `关于“${kw}”的思念：\n` + result;
+        document.getElementById('poemResult').innerHTML = result;
+    });
+
+    // 心愿清单
+    window.completeWish = function(btn) { btn.parentElement.style.textDecoration = 'line-through'; btn.disabled = true; document.getElementById('legacyMessage').innerHTML = '<p>✨ 心愿完成，逝者的精神在延续。</p>'; };
+    document.getElementById('addWishBtn').addEventListener('click', () => { const wish = document.getElementById('newWish').value.trim(); if(wish){ const ul = document.getElementById('wishList'); const li = document.createElement('li'); li.innerHTML = `${wish} <button class="demo-btn" onclick="completeWish(this)">完成</button>`; ul.appendChild(li); document.getElementById('newWish').value = ''; } });
+
+    // AI数字人对话
+    const chatMessagesDiv = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const sendChatBtn = document.getElementById('sendChatBtn');
+    const responses = ['我一直在你身边，要好好照顾自己。','记得我们曾经的美好，带着爱继续前行。','你并不孤单，我会一直守护你。','想念的时候，就抬头看看星空。'];
+    function addMessage(sender, text) { const msg = document.createElement('p'); msg.innerHTML = `<strong>${sender}:</strong> ${text}`; chatMessagesDiv.appendChild(msg); chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; }
+    addMessage('AI', '你好，我在这里陪着你。想和我聊聊吗？');
+    sendChatBtn.addEventListener('click', () => { const userText = chatInput.value.trim(); if(!userText) return; addMessage('你', userText); chatInput.value = ''; setTimeout(() => { addMessage('AI', responses[Math.floor(Math.random() * responses.length)]); }, 500); });
+    chatInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChatBtn.click(); });
+
+    // 天堂来信弹幕
+    let danmakuList = ["外婆，我想你了。","爸爸，你在天上好吗？","每年清明都会为你折纸鹤。","妈妈，我学会了做您最爱吃的菜。","愿星辰带去我的思念。"];
+    let danmakuContainer = document.getElementById('danmakuCanvas');
+    let danmakuTimer = null;
+    function addDanmaku(text) {
+        if (!text.trim()) return;
+        const dan = document.createElement('div');
+        dan.className = 'danmaku';
+        dan.innerText = text;
+        const topPos = Math.random() * (danmakuContainer.clientHeight - 40);
+        const duration = 8 + Math.random() * 5;
+        const startX = danmakuContainer.clientWidth;
+        dan.style.left = startX + 'px';
+        dan.style.top = topPos + 'px';
+        danmakuContainer.appendChild(dan);
+        let startTime = null;
+        function move(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const elapsed = (timestamp - startTime) / 1000;
+            const progress = Math.min(1, elapsed / duration);
+            const x = startX - (startX + dan.clientWidth) * progress;
+            dan.style.transform = `translateX(${x - startX}px)`;
+            if (progress < 1) {
+                requestAnimationFrame(move);
+            } else {
+                dan.remove();
+            }
+        }
+        requestAnimationFrame(move);
+    }
+    function startDanmakuLoop() {
+        if (danmakuTimer) clearInterval(danmakuTimer);
+        danmakuTimer = setInterval(() => {
+            if (danmakuList.length > 0) {
+                const randomIndex = Math.floor(Math.random() * danmakuList.length);
+                addDanmaku(danmakuList[randomIndex]);
+            }
+        }, 3000);
+    }
+    const heavenModal = document.getElementById('heavenLetterModal');
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.target.style.display === 'flex') {
+                setTimeout(() => startDanmakuLoop(), 200);
+            } else {
+                if (danmakuTimer) clearInterval(danmakuTimer);
+            }
+        });
+    });
+    observer.observe(heavenModal, { attributes: true, attributeFilter: ['style'] });
+    document.getElementById('sendDanmakuBtn').addEventListener('click', () => {
+        const input = document.getElementById('danmakuInput');
+        const text = input.value.trim();
+        if (text) {
+            danmakuList.push(text);
+            addDanmaku(text);
+            input.value = '';
+        }
+    });
+    document.querySelectorAll('[data-category]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const cat = btn.getAttribute('data-category');
+            if (cat === 'traditional') danmakuList = ["中秋月圆，思念团圆", "清明雨上，折柳寄情", "春节守岁，念亲恩"];
+            else if (cat === 'free') danmakuList = ["自由如风，思念永恒", "想和你分享今天的晚霞", "你永远活在我心里"];
+            else if (cat === 'anniversary') danmakuList = ["结婚纪念日，想念你", "今天是你生日，为你唱首歌", "三周年，爱不减"];
+            alert(`切换到「${btn.innerText}」分类，弹幕风格已更新。`);
+        });
+    });
+    document.getElementById('historyBtn').addEventListener('click', () => {
+        alert("📜 历史记录：您共有 23 条思念弹幕。\n最新三条：\n" + danmakuList.slice(-3).join("\n"));
+    });
+    document.getElementById('annualReportBtn').addEventListener('click', () => {
+        alert("📊 年度报告：今年共收到 156 条天堂来信，最活跃的思念主题是「陪伴」。感谢您的每一次表达，让爱延续。");
+    });
+</script>
+</body>
+</html>
