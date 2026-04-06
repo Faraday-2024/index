@@ -505,38 +505,8 @@
 </div>
 
 <!-- 模态框 -->
-<div id="poemEnhancedModal" class="modal">
-    <div class="modal-content" style="max-width: 700px;">
-        <span class="modal-close">&times;</span>
-        <h3><i class="fas fa-feather-alt"></i> 记忆启发作词 · 诗意思念</h3>
-        <p style="color: #6b5b7e; margin-bottom: 20px;">输入一个关键词或一段回忆，AI将为你生成专属诗歌</p>
-        
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
-            <input type="text" id="poemKeywordInput" placeholder="例如：外婆、夏天、星空、离别..." style="flex: 1; padding: 12px; border-radius: 40px; border: 1px solid #ddd; font-size: 1rem;">
-            <button class="btn" id="generatePoemEnhancedBtn"><i class="fas fa-magic"></i> 生成诗歌</button>
-        </div>
-        
-        <!-- 快捷关键词 -->
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;">
-            <span class="keyword-chip" data-word="母亲">👩 母亲</span>
-            <span class="keyword-chip" data-word="父亲">👨 父亲</span>
-            <span class="keyword-chip" data-word="童年">🍭 童年</span>
-            <span class="keyword-chip" data-word="故乡">🏠 故乡</span>
-            <span class="keyword-chip" data-word="月光">🌙 月光</span>
-            <span class="keyword-chip" data-word="大海">🌊 大海</span>
-        </div>
-        
-        <!-- 诗歌生成结果区域 -->
-        <div id="poemResultContainer" style="background: #f9f3ff; border-radius: 28px; padding: 20px; min-height: 200px;">
-            <div style="text-align: center; color: #aaa;">
-                <i class="fas fa-feather-alt" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                <p>✨ 输入关键词，让思念化作诗句 ✨</p>
-            </div>
-        </div>
-        
-        <div id="poemSavedHint" style="margin-top: 12px; font-size: 0.75rem; color: #9b7bc7; text-align: center;"></div>
-    </div>
-</div>
+<div id="memoryFullModal" class="modal"><div class="modal-content"><span class="modal-close">&times;</span><h3><i class="fas fa-images"></i> 数字记忆相册</h3><div class="upload-area"><input type="file" id="memoryUpload" accept="image/*" style="display:none"><button class="btn" onclick="document.getElementById('memoryUpload').click()">上传照片</button></div><div id="memoryGalleryList" class="memory-grid"></div><div id="memoryStoryDisplay" style="margin-top:1rem; background:#f9f3ff; border-radius:20px; padding:1rem;">点击照片添加声音印记</div></div></div>
+
 
 <div id="canvasFullModal" class="modal"><div class="modal-content"><span class="modal-close">&times;</span><h3><i class="fas fa-palette"></i> 情感画布</h3><canvas id="drawCanvas" width="500" height="300" style="width:100%; height:auto; background:#fff; border-radius:16px;"></canvas><div class="flex-row"><button class="btn" id="clearCanvasBtn">清空画布</button><button class="btn" id="generateCardBtn">生成卡片</button></div><div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;"><h4><i class="fas fa-robot"></i> AI 文生图</h4><textarea id="aiPromptInput" rows="2" placeholder="用中文描述你想生成的画面，例如：温暖的黄昏，一位老人坐在藤椅上，思念远方" style="width:100%; border-radius: 20px; padding: 12px;"></textarea><button class="btn" id="aiImageBtn" style="margin-top: 10px;"><i class="fas fa-magic"></i> 生成图像</button><div id="aiImageResult" style="margin-top: 15px;"></div></div><div id="cardPreview" style="display:none;"><img id="cardImage" style="max-width:100%; border-radius:16px;"></div></div></div>
 
